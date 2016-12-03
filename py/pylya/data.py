@@ -22,7 +22,6 @@ class qso:
 
 	self.zqso = zqso
 	self.thid = thid
-	self.rc_qso = constants.r_comoving(zqso)
 
     def __xor__(self,data):
 	if isinstance(data,list):
@@ -144,8 +143,6 @@ class delta(qso):
         self.we = iv*f.co**2/(iv*f.co**2*var_lss(f.ll)+1)
         self.co = f.co
         self.mabs = st(f.ll)
-
-        self.project()
 
     def project(self):
 	mde = sp.average(self.de,weights=self.we)
