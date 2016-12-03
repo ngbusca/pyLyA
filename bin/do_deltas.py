@@ -38,10 +38,10 @@ if __name__ == '__main__':
     parser.add_argument('--nspec',type = int,default=None,required=False,
             help='number of spectra to fit')
 
-    parser.add_argument('--zmin-qso',type = float,default=2.1,required=False,
+    parser.add_argument('--zqso-min',type = float,default=2.1,required=False,
             help='lower limit on quasar redshift')
 
-    parser.add_argument('--zmax-qso',type = float,default=3.5,required=False,
+    parser.add_argument('--zqso-max',type = float,default=3.5,required=False,
             help='upper limit on quasar redshift')
 
     parser.add_argument('--log',type = str,default='input.log',required=False,
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     ## sanity
     w = thid>0
 
-    w = w &  (zqso > args.zmin_qso) & (zqso < args.zmax_qso) 
+    w = w &  (zqso > args.zqso_min) & (zqso < args.zqso_max) 
     
     ra = ra[w] * sp.pi / 180
     dec = dec[w] * sp.pi / 180
