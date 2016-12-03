@@ -230,7 +230,7 @@ if __name__ == '__main__':
         deltas[p] = [delta(d,st,lyaf.var_lss,lyaf.eta) for d in data[p]]
 
     for p in deltas:
-        out = fitsio.FITS(args.out_dir+"/pix-{}".format(p)+".fits.gz",'rw',clobber=True)
+        out = fitsio.FITS(args.out_dir+"/delta-{}".format(p)+".fits.gz",'rw',clobber=True)
         for d in deltas[p]:
             hd={}
             hd["RA"]=d.ra
