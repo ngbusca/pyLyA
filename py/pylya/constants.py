@@ -5,16 +5,18 @@ lya=1215.67 ## angstrom
 
 deg = sp.pi/180.
 
+boss_lambda_min = 3600.
+
 
 class cosmo:
-    ## ignore Orad and neutrinos
-    nbins=10000
-    zmax=10.
-    dz = zmax/nbins
-    z=sp.array(range(nbins))*dz
 
     def __init__(self,Om):
         H0 = 100. ## km/s/Mpc
+        ## ignore Orad and neutrinos
+        nbins=10000
+        zmax=10.
+        dz = zmax/nbins
+        z=sp.array(range(nbins))*dz
         hubble = H0*sp.sqrt(Om*(1+z)**3+1-Om)
         c = 299792.4583
 

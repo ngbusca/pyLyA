@@ -6,7 +6,7 @@ import scipy as sp
 
 from scipy.interpolate import interp1d
 from multiprocessing import Pool
-from pylya.data import lyaf
+from pylya.data import forest
 from pylya.data import delta
 from pylya import prep_del
 
@@ -80,20 +80,20 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    ## init lyaf class
+    ## init forest class
 
-    lyaf.lmin = sp.log10(args.lambda_min)
-    lyaf.lmax = sp.log10(args.lambda_max)
-    lyaf.lmin_rest = sp.log10(args.lambda_rest_min)
-    lyaf.lmax_rest = sp.log10(args.lambda_rest_max)
-    lyaf.rebin = args.rebin
-    lyaf.dll = args.rebin*1e-4
+    forest.lmin = sp.log10(args.lambda_min)
+    forest.lmax = sp.log10(args.lambda_max)
+    forest.lmin_rest = sp.log10(args.lambda_rest_min)
+    forest.lmax_rest = sp.log10(args.lambda_rest_max)
+    forest.rebin = args.rebin
+    forest.dll = args.rebin*1e-4
     ## minumum dla transmission
-    lyaf.dla_mask = args.dla_mask
+    forest.dla_mask = args.dla_mask
 
-    lyaf.var_lss = interp1d(lyaf.lmin+sp.arange(2)*(lyaf.lmax-lyaf.lmin),0.2 + sp.zeros(2),fill_value="extrapolate")
-    lyaf.eta = interp1d(lyaf.lmin+sp.arange(2)*(lyaf.lmax-lyaf.lmin), sp.ones(2),fill_value="extrapolate")
-    lyaf.mean_cont = interp1d(lyaf.lmin_rest+sp.arange(2)*(lyaf.lmax_rest-lyaf.lmin_rest),1+sp.zeros(2))
+    forest.var_lss = interp1d(forest.lmin+sp.arange(2)*(forest.lmax-forest.lmin),0.2 + sp.zeros(2),fill_value="extrapolate")
+    forest.eta = interp1d(forest.lmin+sp.arange(2)*(forest.lmax-forest.lmin), sp.ones(2),fill_value="extrapolate")
+    forest.mean_cont = interp1d(forest.lmin_rest+sp.arange(2)*(forest.lmax_rest-forest.lmin_rest),1+sp.zeros(2))
 
     nit = args.nit
     nside = args.nside
@@ -169,7 +169,7 @@ if __name__ == '__main__':
                 log.write("{} not found in file {}\n".format(t,fin))
                 continue
         
-            d = lyaf(h[str(t)], t, r, d, z, p, m, f)
+            d = forest(h[str(t)], t, r, d, z, p, m, f)
 
             if not args.dla_vac is None:
                 if dlas.has_key(t):
@@ -213,21 +213,21 @@ if __name__ == '__main__':
 
         if it < nit-1:
        	    ll_rest, mc = prep_del.mc(data)
-	    lyaf.mean_cont = interp1d(ll_rest, lyaf.mean_cont(ll_rest) * mc, fill_value = "extrapolate")
+	    forest.mean_cont = interp1d(ll_rest, forest.mean_cont(ll_rest) * mc, fill_value = "extrapolate")
             ll,eta,vlss = prep_del.var_lss(data)
-	    lyaf.eta = interp1d(ll, eta, fill_value = "extrapolate")
-	    lyaf.var_lss = interp1d(ll,vlss, fill_value = "extrapolate")
+	    forest.eta = interp1d(ll, eta, fill_value = "extrapolate")
+	    forest.var_lss = interp1d(ll,vlss, fill_value = "extrapolate")
 
     res = fitsio.FITS(args.iter_out_prefix+".fits.gz",'rw',clobber=True)
     ll_st,st = prep_del.stack(data)
     res.write([ll_st,st],names=['loglam','stack'])
     res.write([ll,eta,vlss],names=['loglam','eta','var_lss'])
-    res.write([ll_rest,lyaf.mean_cont(ll_rest)],names=['loglam_rest','mean_cont'])
+    res.write([ll_rest,forest.mean_cont(ll_rest)],names=['loglam_rest','mean_cont'])
     st = interp1d(ll_st,st,kind="nearest",fill_value="extrapolate")
     res.close()
     deltas = {}
     for p in data:
-        deltas[p] = [delta(d,st,lyaf.var_lss,lyaf.eta) for d in data[p]]
+        deltas[p] = [delta.from_forest(d,st,forest.var_lss,forest.eta) for d in data[p]]
 
     for p in deltas:
         out = fitsio.FITS(args.out_dir+"/delta-{}".format(p)+".fits.gz",'rw',clobber=True)
@@ -242,8 +242,8 @@ if __name__ == '__main__':
             hd["MJD"]=d.mjd
             hd["FIBERID"]=d.fid
 
-            cols=[d.ll,d.de,d.we,d.co,d.mabs]
-            names=['LOGLAM','DELTA','WEIGHT','CONT','MABS']
+            cols=[d.ll,d.de,d.we,d.co]
+            names=['LOGLAM','DELTA','WEIGHT','CONT']
             out.write(cols,names=names,header=hd)
         out.close()
 

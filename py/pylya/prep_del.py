@@ -1,5 +1,5 @@
 import scipy as sp
-from data import lyaf
+from data import forest
 import iminuit
 from scipy import linalg
 
@@ -9,11 +9,11 @@ def mc(data):
     nmc=100
     mcont = sp.zeros(nmc)
     wcont = sp.zeros(nmc)
-    ll = lyaf.lmin_rest + (sp.arange(nmc)+.5)*(lyaf.lmax_rest-lyaf.lmin_rest)/nmc
+    ll = forest.lmin_rest + (sp.arange(nmc)+.5)*(forest.lmax_rest-forest.lmin_rest)/nmc
     for p in data:
         for d in data[p]:
-            bins=((d.ll-lyaf.lmin_rest-sp.log10(1+d.zqso))/(lyaf.lmax_rest-lyaf.lmin_rest)*nmc).astype(int)
-            var_lss = lyaf.var_lss(d.ll)
+            bins=((d.ll-forest.lmin_rest-sp.log10(1+d.zqso))/(forest.lmax_rest-forest.lmin_rest)*nmc).astype(int)
+            var_lss = forest.var_lss(d.ll)
             we = d.iv/var_lss*d.co**2/(d.iv + d.co**2/var_lss)
             c = sp.bincount(bins,weights=d.fl/d.co*we)
             mcont[:len(c)]+=c
@@ -29,7 +29,7 @@ def var_lss(data):
     nlss = 10
     eta = sp.zeros(nlss)
     vlss = sp.zeros(nlss)
-    ll = lyaf.lmin + (sp.arange(nlss)+.5)*(lyaf.lmax-lyaf.lmin)/nlss
+    ll = forest.lmin + (sp.arange(nlss)+.5)*(forest.lmax-forest.lmin)/nlss
 
     nwe = 100
     vpmin = 0
@@ -47,7 +47,7 @@ def var_lss(data):
             var_pipe = 1/d.iv/d.co**2
             w = var_pipe < vpmax
 
-            bll = ((d.ll-lyaf.lmin)/(lyaf.lmax-lyaf.lmin)*nlss).astype(int)
+            bll = ((d.ll-forest.lmin)/(forest.lmax-forest.lmin)*nlss).astype(int)
             bwe = ((1/d.iv/d.co**2-vpmin)/(vpmax-vpmin)*nwe).astype(int)
 
             bll = bll[w]
@@ -97,15 +97,15 @@ def var_lss(data):
 
     
 def stack(data,delta=False):
-    nstack = int((lyaf.lmax-lyaf.lmin)/lyaf.dll)+1
-    ll = lyaf.lmin + sp.arange(nstack)*lyaf.dll
+    nstack = int((forest.lmax-forest.lmin)/forest.dll)+1
+    ll = forest.lmin + sp.arange(nstack)*forest.dll
     st = sp.zeros(nstack)
     wst = sp.zeros(nstack)
     for p in data:
         for d in data[p]:
-            bins=((d.ll-lyaf.lmin)/lyaf.dll+0.5).astype(int)
-            var_lss = lyaf.var_lss(d.ll)
-            eta = lyaf.eta(d.ll)
+            bins=((d.ll-forest.lmin)/forest.dll+0.5).astype(int)
+            var_lss = forest.var_lss(d.ll)
+            eta = forest.eta(d.ll)
             if delta:
                 we = d.we
             else:
